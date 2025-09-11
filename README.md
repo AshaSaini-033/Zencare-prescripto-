@@ -38,4 +38,8 @@ The idea behind this app is to make it easy for users to book doctor appointment
 ---
 
 ## 📂 Folder Structure
+┣ admin/ # Admin panel / #doctor panel
+┣ frontend/ # User panel
+┣ backend/ # Node + Express API
+┗ README.md
 
