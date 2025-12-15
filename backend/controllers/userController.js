@@ -72,13 +72,18 @@ export const updateProfile = async (req, res) => {
   const userData={
     name,
     email,
-    password:hashedPassword
+    password:hashedPassword,
+    role: 'user' // Explicitly set the role for a new user
 
   }
   const newUser = new userModel(userData)
     const user = await newUser.save()
 //create token
-const token = jwt.sign({id:user._id},process.env.JWT_SECRET,{expiresIn:'1d'})
+const payload = {
+    id: user._id,
+    role: user.role // Add the role to the token payload
+};
+const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1d' });
 res.json({success:true,user,token})
     }catch(error){
 console.log(error)
@@ -97,9 +102,13 @@ export const loginUser= async(req,res)=>{
             res.json({success:false,message:"Invalid credentials"})
         }   
         else{
-            const token = jwt.sign({id:user._id},process.env.JWT_SECRET)
-
-            res.json({success:true,user,token})
+            const payload = {
+                id: user._id,
+                role: user.role // Add the role to the token payload
+            };
+            const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1d' });
+            
+            res.json({success:true, message: "Login successful", token})
 
         }
     }catch(error)

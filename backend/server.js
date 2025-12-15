@@ -11,11 +11,21 @@ import userRouter from './routes/userRoute.js'
 const app =express()
 app.use(express.json());
 const port =process.env.PORT||3000
-//middle ware
-app.use(express.json())
+//middleware
 app.use(cors()) //allow to connect frontend with backend
 connectDB();
 connectCloudinary();
+
+// Performance logging middleware to measure request "load" (duration)
+app.use((req, res, next) => {
+    const start = Date.now();
+    res.on('finish', () => { // The 'finish' event is emitted when the response has been sent
+        const duration = Date.now() - start;
+        console.log(`[Load Monitor] ${req.method} ${req.originalUrl} | Status: ${res.statusCode} | Duration: ${duration}ms`);
+    });
+    next(); // Pass control to the next middleware/route handler
+});
+
 //end points
 app.use('/api/admin',adminRouter)
 app.use('/api/doctor',doctorRouter)

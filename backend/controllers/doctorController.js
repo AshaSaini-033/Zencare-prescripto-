@@ -26,7 +26,7 @@ import appointmentModel from "../models/appointmentModel.js";
 };
  export const doctorsList  = async (req,res)=>{
     try{
-        const doctors= await doctorModel.find({}).select(['-password','-email']) 
+        const doctors= await doctorModel.find({ available: true }).select(['-password','-email']) 
         res.json({success:true,doctors})
     }
     catch(error){
@@ -35,6 +35,21 @@ import appointmentModel from "../models/appointmentModel.js";
         
  }
 }
+
+// New function for Admin Panel to get all doctors
+export const getAllDoctorsForAdmin = async (req, res) => {
+    try {
+        // This endpoint is for admins, so we return more data, like email.
+        // We still exclude the password for security.
+        const doctors = await doctorModel.find({}).select('-password');
+        res.json({ success: true, doctors });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ success: false, message: "Error fetching doctors for admin" });
+    }
+};
+
+
 export const doctorLogin =async(req,res)=>{
     try{
         console.log('BODY:', req.body);
@@ -48,8 +63,15 @@ export const doctorLogin =async(req,res)=>{
         if(!isMatch){
             return res.json({success:false,message:"Invalid credentials"})
         }else{
-            const token = jwt.sign({id:doctor._id},process.env.JWT_SECRET)
-            res.json({success:true,doctor,token})
+            // Create a payload that includes both the ID and the ROLE
+            const payload = {
+                id: doctor._id,
+                role: 'doctor' // Explicitly add the role to the token
+            };
+
+            // Sign the token with the new, more complete payload
+            const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1h' });
+            res.json({success:true, message: "Login successful", token})
         }
     }catch(error){
         console.log(error)
